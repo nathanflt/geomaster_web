@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>GeoMaster – Accueil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="assets/css/style.css"/>
+</head>
+<body>
+  <header>
+    <h1>GeoMaster</h1>
+    <p class="tagline">Teste ta culture géographique de façon ludique&nbsp;!</p>
+  </header>
+
+  <section class="modes">
+    <a class="card" href="game.html?mode=easy">Mode Facile</a>
+    <a class="card" href="game.html?mode=flag">Mode Drapeau</a>
+    <a class="card" href="game.html?mode=medium">Mode Capitales</a>
+    <a class="card" href="game.html?mode=hard">Mode Villes &gt; 1&nbsp;M</a>
+  </section>
+
+  <nav>
+    <a href="https://github.com/YOUR_USERNAME/geomaster-web" target="_blank">GitHub</a>
+  </nav>
+</body>
+</html>

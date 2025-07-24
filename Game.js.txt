@@ -1,0 +1,89 @@
+const url  = new URLSearchParams(location.search);
+const MODE = url.get('mode') || 'easy';
+let score  = 0;
+let current = {};
+
+let map, countriesLayer;
+const countries = [];
+let cities = [];
+
+map = L.map('map').setView([20, 0], 2);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+const capitals = {
+  France:"Paris", Germany:"Berlin", Japan:"Tokyo", Canada:"Ottawa",
+  India:"New Delhi", Brazil:"Brasília", Egypt:"Cairo", Nigeria:"Abuja",
+  China:"Beijing", Russia:"Moscow", Australia:"Canberra", Argentina:"Buenos Aires",
+  Turkey:"Ankara", South Africa:"Cape Town", Mexico:"Mexico City"
+};
+
+Promise.all([
+  fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geojson').then(r => r.json()),
+  fetch('assets/js/cities.json').then(r => r.json())
+]).then(([geo, c]) => {
+  cities = c;
+  countriesLayer = L.geoJSON(geo, {
+    style: () => ({ color: '#555', weight: 1, fillOpacity: MODE === 'easy' ? 0.4 : 0.2 }),
+    onEachFeature: (f, layer) => {
+      const name = f.properties.name;
+      const iso  = f.properties.iso_a2.toLowerCase();
+      countries.push({ name, iso, layer, capital: capitals[name] });
+      if (MODE === 'easy') layer.bindTooltip(name, { permanent: false });
+    }
+  }).addTo(map);
+  nextQuestion();
+});
+
+function nextQuestion() {
+  countries.forEach(c => c.layer.setStyle({ fillColor: null, fillOpacity: MODE === 'easy' ? 0.4 : 0.2 }));
+  switch (MODE) {
+    case 'easy':
+      current = { type: 'country', ...countries[rand(countries)] };
+      document.getElementById('question').innerHTML = `Clique sur : <strong>${current.name}</strong>`;
+      break;
+    case 'flag':
+      current = { type: 'country', ...countries[rand(countries)] };
+      document.getElementById('question').innerHTML =
+        `Devine le pays&nbsp;: <img src="https://flagcdn.com/96x72/${current.iso}.png" style="height:24px;border:1px solid #ddd;border-radius:3px">`;
+      break;
+    case 'medium':
+      const cap = countries.filter(c => c.capital);
+      current = { type: 'capital', ...cap[rand(cap)] };
+      document.getElementById('question').innerHTML = `Capitale : <strong>${current.capital}</strong>`;
+      break;
+    case 'hard':
+      current = { type: 'city', ...cities[rand(cities)] };
+      document.getElementById('question').innerHTML = `Localise : <strong>${current.name}</strong>`;
+      break;
+  }
+}
+
+map.on('click', function (ev) {
+  let ok = false;
+  switch (MODE) {
+    case 'easy':
+    case 'flag':
+      const c = countries.find(c => c.layer.getBounds().contains(ev.latlng));
+      ok = c && c.name === current.name;
+      if (c) c.layer.setStyle({ fillColor: ok ? 'green' : 'red', fillOpacity: 0.6 });
+      break;
+    case 'medium':
+      const cc = countries.find(c => c.layer.getBounds().contains(ev.latlng));
+      ok = cc && cc.name === current.name;
+      if (cc) cc.layer.setStyle({ fillColor: ok ? 'green' : 'red', fillOpacity: 0.6 });
+      break;
+    case 'hard':
+      const dist = map.distance([current.lat, current.lon], ev.latlng) / 1000;
+      ok = dist < 150;
+      L.circle(ev.latlng, { color: ok ? 'green' : 'red', fillOpacity: 0.4, radius: 150000 }).addTo(map);
+      break;
+  }
+  score = ok ? score + 100 : Math.max(0, score - 20);
+  document.getElementById('score').textContent = `Score : ${score}`;
+  setTimeout(() => alert(ok ? '✅ Bonne réponse !' : `❌ Mauvaise réponse. C’était : ${current.name}`), 300);
+  setTimeout(nextQuestion, 600);
+});
+
+const rand = arr => Math.floor(Math.random() * arr.length);

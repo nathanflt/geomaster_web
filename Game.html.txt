@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>GeoMaster – Jeu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="assets/css/style.css"/>
+</head>
+<body>
+  <div id="top-bar">
+    <div id="question">Chargement…</div>
+    <div id="score">Score : 0</div>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="bottom-bar">
+    <button onclick="nextQuestion()">Question suivante</button>
+    <button onclick="location.href='index.html'">Quitter</button>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="assets/js/game.js"></script>
+</body>
+</html>
